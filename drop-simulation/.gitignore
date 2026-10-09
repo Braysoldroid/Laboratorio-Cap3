@@ -3,3 +3,4 @@ build-*/
 output/
 *.mp4
 *.avi
+perf*.data*
