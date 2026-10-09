@@ -53,26 +53,9 @@ amortiguación, borde de amortiguación y parámetros de caída que sirven en la
 
 ## 2. Diagrama de flujo
 
-![Diagrama de flujo del programa](docs/flujo_simulacion_gota.png)
+![Diagrama de flujo del programa](Diagrama de flujo del programa.pdf)
 
-El archivo editable se encuentra en `docs/flujo_simulacion_gota.drawio`.
-
-### Correspondencia con los elementos solicitados
-
-| Elemento solicitado                   | Ubicación en el diagrama                                                   |
-|---------------------------------------|----------------------------------------------------------------------------|
-| Inicialización de parámetros          | Banda 1 · Inicialización: carga de `Config`, `total_frames` y `cells`      |
-| Reserva de memoria                    | Banda 1 · Inicialización: vectores `previous`, `current` y `next`          |
-| Perturbación inicial de la gota       | Banda 1 · Inicialización: llamada a `add_drop()`                           |
-| Ciclo de simulación                   | Banda 3 · Bucle de simulación: decisiones de `frame` y `step`              |
-| Actualización de la malla             | Banda 3 · Bucle de simulación: `simulate_step()` y rotación de buffers     |
-| Renderizado del cuadro                | Banda 4 · Renderizado y escritura: `render_frame()`                        |
-| Escritura del video                   | Banda 4 · Renderizado y escritura: `writer.write()`                        |
-| Cálculo de métricas de rendimiento    | Banda 5 · Estadísticas y cierre: `elapsed`, pasos simulados y rendimiento  |
-
-El diagrama incluye además la configuración del escritor de video con su validación (Banda 2) y la ruta de manejo de errores.
-
----
+El archivo editable se encuentra en `Diagrama de flujo del programa.pdf`.
 
 ## 3. Explicación del programa y del modelo físico
 
