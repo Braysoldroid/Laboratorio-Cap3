@@ -32,10 +32,10 @@ meson compile -C build-perf
 taskset -c "$(cat /sys/devices/cpu_core/cpus)" <comando>
 ```
 
-**Temporizadores:** `profiling/main_timers.cpp` es una copia de `src/main.cpp` (el original no se modificó) que mide `simulate_step`, `render_frame`, `writer.write` y `add_drop`. Agrega 4 lecturas del reloj por cuadro, un costo despreciable.
+**Temporizadores:** `main_timers.cpp` (en esta carpeta) es una copia de `drop-simulation/src/main.cpp` (el original no se modificó) que mide `simulate_step`, `render_frame`, `writer.write` y `add_drop`. Agrega 4 lecturas del reloj por cuadro, un costo despreciable.
 
 ```bash
-g++ -std=c++17 -O3 profiling/main_timers.cpp -o build-timers/drop_timers $(pkg-config --cflags --libs opencv4)
+g++ -std=c++17 -O3 main_timers.cpp -o drop_timers $(pkg-config --cflags --libs opencv4)
 ```
 
 ---
@@ -111,4 +111,4 @@ Las dos herramientas coinciden con diferencias de unos 4 puntos porcentuales o m
 
 ## 7. Archivos relacionados
 
-- `profiling/main_timers.cpp`: versión con temporizadores manuales.
+- `main_timers.cpp`: versión con temporizadores manuales (en esta carpeta).
