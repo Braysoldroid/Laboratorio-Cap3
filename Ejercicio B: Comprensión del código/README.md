@@ -1,8 +1,5 @@
 # Ejercicio B: Análisis del código base
 
-**Curso:** Computación Heterogénea
-**Autor:** Brayan Solís
-
 Este ejercicio consiste en identificar los componentes principales del programa `drop_simulation.cpp`, elaborar un diagrama de flujo del programa y explicar qué hace y qué modelo físico aproxima.
 
 ---
