@@ -142,6 +142,10 @@ Para obtener el desglose por componente, el programa usa eventos CUDA, que marca
 | Escritura de video | 0.934 ms/frame  | Incluida en `putText + write`: 20.984 ms/frame |
 | Copia GPU → CPU    | No aplica       | 2.315 ms/frame                                  |
 
+### Diagrama de flujo
+
+El diagrama [diagrama_flujo_gpu.drawio.pdf](Ejercicio%20G%3A%20Reporte%20de%20optimizaciones/diagrama_flujo_gpu.drawio.pdf) resume el programa porteado y distingue con colores dónde ocurre cada paso: en la CPU (host), en la GPU (kernels) o en una transferencia entre ambas. Este diagrama hace visible la decisión central del porteo: todo el cálculo pesado ocurre dentro de la GPU, y la CPU solo interviene al inicio, para preparar los datos, y en cada cuadro, para escribir el video.
+
 ---
 
 ## 4. Validación
