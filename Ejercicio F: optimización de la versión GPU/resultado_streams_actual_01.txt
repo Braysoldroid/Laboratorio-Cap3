@@ -1,0 +1,25 @@
+GPU: NVIDIA Tegra X1 (sm_53)
+Streams: computo y copia | Buffers de imagen: 2
+Frame 0 / 900
+Frame 90 / 900
+Frame 180 / 900
+Frame 270 / 900
+Frame 360 / 900
+Frame 450 / 900
+Frame 540 / 900
+Frame 630 / 900
+Frame 720 / 900
+Frame 810 / 900
+Video generado: output/drop_simulation_streams.mp4
+Tiempo: 19.2621 s
+Pasos simulados: 900
+Rendimiento: 46.7238 pasos/s
+Copia H2D inicial (fuera del bucle): 0.365 ms
+
+--- Desglose por cuadro (ms, promedio) ---
+Kernel simulate_step : 0.455154
+Kernel render_frame  : 1.08047
+Copia D2H            : 0.196684
+Copia pinned -> Mat  : 2.47894
+putText + write (CPU): 18.0543
+Los componentes se pueden solapar; su suma no es el tiempo total.

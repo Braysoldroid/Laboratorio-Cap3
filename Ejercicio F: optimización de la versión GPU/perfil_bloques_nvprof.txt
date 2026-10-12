@@ -1,0 +1,47 @@
+==32565== NVPROF is profiling process 32565, command: ./gpu_bloques
+==32565== Warning: Unified Memory Profiling is not supported on the underlying platform. System requirements for unified memory can be found at: http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-requirements
+==32565== Profiling application: ./gpu_bloques
+Frame 0 / 900
+Frame 90 / 900
+Frame 180 / 900
+Frame 270 / 900
+Frame 360 / 900
+Frame 450 / 900
+Frame 540 / 900
+Frame 630 / 900
+Frame 720 / 900
+Frame 810 / 900
+Video generado: output/drop_simulation_bloques.mp4
+Tiempo: 14.6505 s
+Pasos simulados: 900
+Rendimiento: 61.4314 pasos/s
+
+--- Desglose por cuadro (ms, promedio) ---
+Kernel simulate_step : 0.431635
+Kernel render_frame  : 0.792387
+Copia D2H            : 0.695909
+putText + write (CPU): 14.0425
+==32565== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   60.16%  709.94ms       900  788.83us  787.62us  790.44us  _GLOBAL__N__58_tmpxft_00005c91_00000000_8_drop_simulation_bloques_cpp1_ii_main::render_frame_kernel(float const *, unsigned char*, _GLOBAL__N__58_tmpxft_00005c91_00000000_8_drop_simulation_bloques_cpp1_ii_main::KernelParams)
+                   30.44%  359.26ms       900  399.17us  387.72us  431.89us  _GLOBAL__N__58_tmpxft_00005c91_00000000_8_drop_simulation_bloques_cpp1_ii_main::simulate_step_kernel(float const *, float const *, float*, _GLOBAL__N__58_tmpxft_00005c91_00000000_8_drop_simulation_bloques_cpp1_ii_main::KernelParams)
+                    9.34%  110.23ms       900  122.48us  121.31us  141.20us  [CUDA memcpy DtoH]
+                    0.05%  546.79us         2  273.39us  173.44us  373.34us  [CUDA memcpy HtoD]
+                    0.01%  89.743us         1  89.743us  89.743us  89.743us  [CUDA memset]
+      API calls:   68.32%  1.57424s       902  1.7453ms  777.20us  3.1951ms  cudaMemcpy
+                   13.62%  313.78ms         5  62.755ms  138.49us  313.07ms  cudaFree
+                    8.61%  198.31ms      3600  55.086us  19.479us  167.61us  cudaEventRecord
+                    8.21%  189.27ms      1800  105.15us  39.845us  289.17us  cudaLaunchKernel
+                    0.56%  12.867ms      2700  4.7650us  2.7080us  66.459us  cudaEventElapsedTime
+                    0.37%  8.5532ms       900  9.5030us  6.6150us  262.92us  cudaEventSynchronize
+                    0.20%  4.6270ms         4  1.1568ms  1.0353ms  1.4214ms  cudaMalloc
+                    0.10%  2.2186ms      1800  1.2320us     729ns  24.740us  cudaGetLastError
+                    0.01%  160.21us        97  1.6510us     729ns  51.772us  cuDeviceGetAttribute
+                    0.01%  119.74us         1  119.74us  119.74us  119.74us  cudaMemset
+                    0.00%  32.917us         4  8.2290us  3.9580us  19.688us  cudaEventCreate
+                    0.00%  26.147us         4  6.5360us  2.9170us  17.031us  cudaEventDestroy
+                    0.00%  9.6870us         1  9.6870us  9.6870us  9.6870us  cuDeviceTotalMem
+                    0.00%  6.0410us         3  2.0130us  1.3540us  2.7600us  cuDeviceGetCount
+                    0.00%  2.9160us         2  1.4580us  1.0410us  1.8750us  cuDeviceGet
+                    0.00%  1.8750us         1  1.8750us  1.8750us  1.8750us  cuDeviceGetName
+                    0.00%  1.5110us         1  1.5110us  1.5110us  1.5110us  cuDeviceGetUuid

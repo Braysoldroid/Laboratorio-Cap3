@@ -1,0 +1,22 @@
+Frame 0 / 900
+Frame 90 / 900
+Frame 180 / 900
+Frame 270 / 900
+Frame 360 / 900
+Frame 450 / 900
+Frame 540 / 900
+Frame 630 / 900
+Frame 720 / 900
+Frame 810 / 900
+Video generado: output/drop_simulation_cpu.mp4
+Tiempo: 111.724 s
+Pasos simulados: 900
+Rendimiento: 8.05558 pasos/s
+
+--- Perfil manual (bucle principal) ---
+simulate_step       5.8107 s     5.20 %     6.456 ms/frame
+render_frame       87.2277 s    78.07 %    96.920 ms/frame
+writer.write       18.6805 s    16.72 %    20.756 ms/frame
+otros (print)       0.0050 s     0.00 %     0.006 ms/frame
+TOTAL bucle       111.7238 s   100.00 %   124.138 ms/frame
+(add_drop, fuera del bucle: 0.022403 s)

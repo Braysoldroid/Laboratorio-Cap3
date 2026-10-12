@@ -1,0 +1,60 @@
+==916== NVPROF is profiling process 916, command: ./gpu_streams
+==916== Warning: Unified Memory Profiling is not supported on the underlying platform. System requirements for unified memory can be found at: http://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#um-requirements
+==916== Profiling application: ./gpu_streams
+GPU: NVIDIA Tegra X1 (sm_53)
+Streams: computo y copia | Buffers de imagen: 2
+Frame 0 / 900
+Frame 90 / 900
+Frame 180 / 900
+Frame 270 / 900
+Frame 360 / 900
+Frame 450 / 900
+Frame 540 / 900
+Frame 630 / 900
+Frame 720 / 900
+Frame 810 / 900
+Video generado: output/drop_simulation_streams.mp4
+Tiempo: 14.6393 s
+Pasos simulados: 900
+Rendimiento: 61.4782 pasos/s
+Copia H2D inicial (fuera del bucle): 0.345468 ms
+
+--- Desglose por cuadro (ms, promedio) ---
+Kernel simulate_step : 0.425557
+Kernel render_frame  : 0.79258
+Copia D2H            : 0.129954
+Copia pinned -> Mat  : 1.95865
+putText + write (CPU): 13.7849
+Los componentes se pueden solapar; su suma no es el tiempo total.
+==916== Profiling result:
+            Type  Time(%)      Time     Calls       Avg       Min       Max  Name
+ GPU activities:   58.98%  710.95ms       900  789.95us  788.82us  808.72us  drop_streams::render_frame_kernel(float const *, unsigned char*, drop_streams::KernelParams)
+                   31.52%  379.91ms       900  422.12us  409.80us  472.57us  drop_streams::simulate_step_kernel(float const *, float const *, float*, drop_streams::KernelParams)
+                    9.46%  114.06ms       900  126.73us  121.83us  148.86us  [CUDA memcpy DtoH]
+                    0.03%  337.82us         2  168.91us  166.72us  171.10us  [CUDA memcpy HtoD]
+                    0.01%  88.492us         1  88.492us  88.492us  88.492us  [CUDA memset]
+      API calls:   41.15%  314.12ms         6  52.354ms  152.29us  313.24ms  cudaFree
+                   26.54%  202.56ms      6302  32.142us  2.5520us  109.43us  cudaEventRecord
+                   18.85%  143.89ms      1800  79.938us  40.313us  158.86us  cudaLaunchKernel
+                    7.26%  55.398ms       902  61.417us  34.011us  104.12us  cudaMemcpyAsync
+                    1.82%  13.894ms      2701  5.1430us  3.1770us  34.949us  cudaEventElapsedTime
+                    1.52%  11.597ms       900  12.885us  8.6980us  1.3078ms  cudaEventSynchronize
+                    0.76%  5.7799ms       900  6.4220us  4.1660us  29.480us  cudaStreamWaitEvent
+                    0.73%  5.5493ms         4  1.3873ms  1.1212ms  1.7072ms  cudaHostAlloc
+                    0.66%  5.0096ms         5  1.0019ms  770.59us  1.1617ms  cudaMalloc
+                    0.45%  3.4092ms      1800  1.8940us     677ns  38.074us  cudaGetLastError
+                    0.16%  1.2560ms         4  314.00us  275.53us  354.59us  cudaFreeHost
+                    0.03%  255.79us         3  85.262us  4.8440us  223.81us  cudaStreamSynchronize
+                    0.03%  249.59us         1  249.59us  249.59us  249.59us  cudaMemsetAsync
+                    0.02%  115.00us        97  1.1850us     625ns  23.803us  cuDeviceGetAttribute
+                    0.01%  71.876us         1  71.876us  71.876us  71.876us  cudaGetDeviceProperties
+                    0.01%  62.816us        16  3.9260us  2.3960us  10.000us  cudaEventDestroy
+                    0.01%  55.938us        12  4.6610us  3.3330us  7.7610us  cudaEventCreate
+                    0.00%  26.407us         2  13.203us  8.1250us  18.282us  cudaStreamDestroy
+                    0.00%  24.219us         2  12.109us  5.6770us  18.542us  cudaStreamCreateWithFlags
+                    0.00%  11.355us         4  2.8380us  2.6040us  2.9690us  cudaEventCreateWithFlags
+                    0.00%  9.7390us         1  9.7390us  9.7390us  9.7390us  cuDeviceTotalMem
+                    0.00%  5.7300us         3  1.9100us  1.1460us  2.6560us  cuDeviceGetCount
+                    0.00%  2.9690us         2  1.4840us  1.1460us  1.8230us  cuDeviceGet
+                    0.00%  2.1360us         1  2.1360us  2.1360us  2.1360us  cuDeviceGetName
+                    0.00%     989ns         1     989ns     989ns     989ns  cuDeviceGetUuid
