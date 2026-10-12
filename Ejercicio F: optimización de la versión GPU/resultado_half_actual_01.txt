@@ -1,0 +1,20 @@
+Frame 0 / 900
+Frame 90 / 900
+Frame 180 / 900
+Frame 270 / 900
+Frame 360 / 900
+Frame 450 / 900
+Frame 540 / 900
+Frame 630 / 900
+Frame 720 / 900
+Frame 810 / 900
+Video generado: output/drop_simulation_half.mp4
+Tiempo: 15.6515 s
+Pasos simulados: 900
+Rendimiento: 57.5025 pasos/s
+
+--- Desglose por cuadro (ms, promedio) ---
+Kernel simulate_step : 0.351863
+Kernel render_frame  : 0.782798
+Copia D2H            : 0.695203
+putText + write (CPU): 15.2839

@@ -20,8 +20,8 @@ El programa base es una simulación de ondas en la superficie del agua escrita e
 
 El detalle de la construcción, ejecución y análisis del código se encuentra en:
 
-- `README.md`: Ejercicio A, construcción y ejecución del código base.
-- `README_Ejercicio_B.md`: Ejercicio B, análisis del código y diagrama de flujo.
+- [Ejercicio A](../Ejercicio%20A%3A%20Construcci%C3%B3n%20y%20ejecuci%C3%B3n%20del%20c%C3%B3digo%20base/README.md): construcción y ejecución del código base.
+- [Ejercicio B](../Ejercicio%20B%3A%20Comprensi%C3%B3n%20del%20c%C3%B3digo/README.md): análisis del código y diagrama de flujo.
 
 ### Parámetros de la simulación
 
@@ -45,6 +45,8 @@ El detalle de la construcción, ejecución y análisis del código se encuentra 
 ---
 
 ## 2. Resultados de perfilado CPU
+
+Estas mediciones corresponden a la computadora con CPU híbrida usada en C. Para comparar CPU y GPU de la Jetson se usa la referencia medida nuevamente en el apartado 6.
 
 El programa tardó en promedio 10.288 s en generar los 900 cuadros (11.43 ms por cuadro, 87.5 pasos/s). Ese tiempo se concentra en pocas funciones:
 
@@ -132,7 +134,7 @@ Los kernels no pueden recibir la estructura `Config` original porque contiene un
 
 Para obtener el desglose por componente, el programa usa eventos CUDA, que marcan tiempos dentro de la propia GPU, alrededor del kernel de simulación, del kernel de render y de la copia de la imagen. La parte en CPU (`putText` y `writer.write`) se mide con `std::chrono`. Antes de empezar a medir se inicializa el contexto CUDA con `cudaFree(0)`, para que el costo de arranque de la GPU no se cuente en el primer cuadro.
 
-| Métrica            | CPU             | GPU                                             |
+| Métrica            | CPU híbrida (C) | GPU Jetson, medición inicial de D |
 |--------------------|-----------------|-------------------------------------------------|
 | Tiempo total       | 10.288 s        | 32.548 s                                        |
 | Frames procesados  | 900             | 900                                             |
@@ -142,9 +144,11 @@ Para obtener el desglose por componente, el programa usa eventos CUDA, que marca
 | Escritura de video | 0.934 ms/frame  | Incluida en `putText + write`: 20.984 ms/frame |
 | Copia GPU → CPU    | No aplica       | 2.315 ms/frame                                  |
 
+Los valores anteriores pertenecen a equipos distintos y se conservan como resultados del porteo. Los speedups del apartado 6 usan CPU y GPU de la misma Jetson.
+
 ### Diagrama de flujo
 
-El diagrama [diagrama_flujo_gpu.drawio.pdf](Ejercicio%20G%3A%20Reporte%20de%20optimizaciones/diagrama_flujo_gpu.drawio.pdf) resume el programa porteado y distingue con colores dónde ocurre cada paso: en la CPU (host), en la GPU (kernels) o en una transferencia entre ambas. Este diagrama hace visible la decisión central del porteo: todo el cálculo pesado ocurre dentro de la GPU, y la CPU solo interviene al inicio, para preparar los datos, y en cada cuadro, para escribir el video.
+El diagrama [diagrama_flujo_gpu.drawio.pdf](diagrama_flujo_gpu.drawio.pdf) resume el programa porteado y distingue con colores dónde ocurre cada paso: en la CPU (host), en la GPU (kernels) o en una transferencia entre ambas. Este diagrama hace visible la decisión central del porteo: todo el cálculo pesado ocurre dentro de la GPU, y la CPU solo interviene al inicio, para preparar los datos, y en cada cuadro, para escribir el video.
 
 ---
 
@@ -156,7 +160,7 @@ Se descartó comparar los videos generados, porque la compresión MP4 es con pé
 
 **1. Comparación numérica de la malla de alturas.** La malla de la GPU se copia al host y se compara celda por celda con la de la CPU, sobre las 409 600 celdas. Se calculan el error absoluto medio y el error absoluto máximo.
 
-**2. Comparación del cuadro renderizado.** Ambos renders reciben la misma malla y sus imágenes se comparan píxel a píxel. Se miden la diferencia media, la diferencia máxima en niveles de gris y el porcentaje de píxeles que difieren. Al usar la misma malla de entrada, el error del render queda aislado del error de la simulación.
+**2. Comparación del cuadro renderizado.** Cada versión renderiza su malla del mismo cuadro y las imágenes se comparan píxel a píxel. Se miden la diferencia media, la diferencia máxima en niveles de gris y el porcentaje de píxeles que difieren. En la GPU base, las alturas coinciden en los cuadros de control, por lo que las diferencias observadas de imagen corresponden al render.
 
 **3. Comparación visual.** En los cuadros 0, 100, 300, 600 y el último se guarda una imagen con tres paneles: el cuadro de la CPU, el de la GPU y su diferencia amplificada 40 veces, para que incluso una diferencia de 1 nivel de gris sea visible.
 
@@ -174,7 +178,7 @@ El programa de validación terminó con el veredicto `VALIDACION CORRECTA`: la v
 
 ### Interpretación de las diferencias
 
-**La malla de alturas es idéntica bit a bit.** El error es exactamente cero en todos los cuadros de control, no solo pequeño. La actualización de la onda usa únicamente sumas, restas y multiplicaciones, y el kernel las evalúa en el mismo orden que la versión CPU. Con las mismas operaciones, en el mismo orden y sobre los mismos datos, el redondeo de punto flotante también es el mismo.
+**No se observaron diferencias de altura en los cuadros de control.** El error absoluto máximo fue cero en esos cuadros. La actualización de la onda conserva los cálculos de CPU; esta comparación numérica no es una comprobación de los bits de todos los cuadros.
 
 **La imagen difiere en, como máximo, 1 nivel de gris en unos pocos píxeles.** Como las alturas son idénticas, esa diferencia solo puede venir del render. Este usa funciones matemáticas (`powf`, `sqrtf` y la normalización de vectores) cuyas implementaciones en la GPU y en la librería de la CPU pueden diferir en el último bit de precisión. Normalmente eso no cambia nada, pero si la intensidad de un píxel cae justo en el límite entre dos enteros (por ejemplo, 127.9999 en una versión y 128.0001 en la otra), la conversión a `unsigned char` lo lleva a niveles distintos. Por eso las diferencias son raras, aisladas y nunca mayores a 1 nivel.
 
@@ -184,47 +188,37 @@ El programa de validación terminó con el veredicto `VALIDACION CORRECTA`: la v
 
 ## 5. Resultados de optimización
 
-### 5.1 Optimización 1
+Cada técnica parte de D, con 640x640, 900 cuadros y un paso por cuadro. Equipo: Jetson Tegra X1, CUDA 10.2. Opciones GPU: `-O2 -std=c++14 -arch=sm_53`; CPU: `-O3 -std=c++17`.
 
-**Descripción:**
+### 5.1 Multiplicaciones para la potencia 24
 
-<!-- Qué se cambió y por qué debería mejorar el rendimiento -->
+El render era el kernel más costoso. Reemplazamos `powf(d, 24)` por cinco multiplicaciones para obtener `d^16 * d^8`. nvprof mostró **29.09% menos tiempo de render** y la validación pasó. El total perfilado subió a 17.1872 s, junto con el tiempo de escritura CPU; la mejora del kernel no redujo ese total.
 
-**Resultados:**
+### 5.2 Ajuste de bloques
 
-| Métrica                     | Valor |
-|-----------------------------|-------|
-| Tiempo total de ejecución   |       |
-| Rendimiento (pasos/s)       |       |
-| Error máximo                |       |
+Cambiamos 16x16 por 32x8 para probar otra distribución de los mismos 256 hilos. nvprof mostró **5.21% menos tiempo en simulate_step** y render casi igual. El total perfilado, 14.6505 s, quedó cerca de la base. La validación pasó, sin mejora apreciable del programa.
 
-### 5.2 Optimización 2
+### 5.3 Streams y copias asíncronas
 
-**Descripción:**
+Un stream de cómputo y otro de copias, con dos buffers y eventos, permiten preparar otro cuadro mientras CPU escribe el anterior. nvprof registró 902 copias asíncronas. Los perfiles tardaron 14.5917 y 14.6393 s, cerca de la base; la copia adicional pinned a Mat costó unos 2 ms/cuadro. La validación pasó, sin mejora del total en esta serie.
 
-<!-- Qué se cambió y por qué debería mejorar el rendimiento -->
+### 5.4 Prueba descartada: half
 
-**Resultados:**
+Guardamos las alturas en half, con cálculo intermedio en float, para reducir tráfico de memoria. simulate_step bajó **17.31%** en nvprof, pero el error máximo de altura llegó a **0.6708** y el de imagen a **91 niveles**. Falló las tolerancias originales y se descartó; no se usó como base de las otras variantes.
 
-| Métrica                     | Valor |
-|-----------------------------|-------|
-| Tiempo total de ejecución   |       |
-| Rendimiento (pasos/s)       |       |
-| Error máximo                |       |
+### Kernels y copias medidos con nvprof
 
-### 5.3 Optimización 3
+Valores en **ms**. Kernels y D2H son promedios de 900 llamadas por perfil; H2D es el total de las dos copias iniciales. Streams usa la media de sus dos perfiles.
 
-**Descripción:**
+| Versión / evidencia | simulate_step | render_frame | H2D inicial | D2H |
+|---|---:|---:|---:|---:|
+| [GPU base](../Ejercicio%20F%3A%20optimizaci%C3%B3n%20de%20la%20versi%C3%B3n%20GPU/perfil_base_nvprof.txt) | 0.42109 | 0.78982 | 0.38808 | 0.12279 |
+| [Multiplicaciones](../Ejercicio%20F%3A%20optimizaci%C3%B3n%20de%20la%20versi%C3%B3n%20GPU/perfil_pow24_nvprof.txt) | 0.42424 | 0.56008 | 0.66147 | 0.12531 |
+| [Bloques](../Ejercicio%20F%3A%20optimizaci%C3%B3n%20de%20la%20versi%C3%B3n%20GPU/perfil_bloques_nvprof.txt) | 0.39917 | 0.78883 | 0.54679 | 0.12248 |
+| [Streams](../Ejercicio%20F%3A%20optimizaci%C3%B3n%20de%20la%20versi%C3%B3n%20GPU/perfil_streams_nvprof.txt) | 0.422475 | 0.78996 | 0.33722 | 0.127335 |
+| [Half](../Ejercicio%20F%3A%20optimizaci%C3%B3n%20de%20la%20versi%C3%B3n%20GPU/perfil_half_nvprof.txt) | 0.34821 | 0.81610 | 0.16172 | 0.12364 |
 
-<!-- Qué se cambió y por qué debería mejorar el rendimiento -->
-
-**Resultados:**
-
-| Métrica                     | Valor |
-|-----------------------------|-------|
-| Tiempo total de ejecución   |       |
-| Rendimiento (pasos/s)       |       |
-| Error máximo                |       |
+También se conserva el [segundo perfil de streams](../Ejercicio%20F%3A%20optimizaci%C3%B3n%20de%20la%20versi%C3%B3n%20GPU/perfil_streams_nvprof_02.txt). nvprof se ejecutó con sudo. La advertencia de Unified Memory no impidió registrar los kernels y las copias explícitas.
 
 ---
 
@@ -232,26 +226,48 @@ El programa de validación terminó con el veredicto `VALIDACION CORRECTA`: la v
 
 ### Comparación de versiones
 
-| Versión          | Tiempo total | Pasos/s  | Speedup | Error máximo   |
-|------------------|--------------|----------|---------|----------------|
-| CPU base         | 17.0499 s    | 52.7864  | 1.00x   | — (referencia) |
-| GPU base         |              |          |         |                |
-| Optimización 1   |              |          |         |                |
-| Optimización 2   |              |          |         |                |
-| Optimización 3   |              |          |         |                |
+Referencia CPU de la misma Jetson: **71.4688 s**, sin nvprof. Los tiempos GPU son del bucle **durante el perfilado**, sin inicialización ni cierre del video; H2D inicial se informa aparte.
 
-El speedup se calcula respecto a la versión CPU base:
+| Versión | Tiempo total | Pasos/s | Speedup CPU | Error máximo de altura |
+|---|---:|---:|---:|---:|
+| CPU base | 71.4688 s | 12.5929 | 1.0000x | — |
+| GPU base | 14.5739 s | 61.7544 | 4.9039x | 0 |
+| Optimización 1: multiplicaciones | 17.1872 s | 52.3646 | 4.1583x | 0 |
+| Optimización 2: bloques | 14.6505 s | 61.4314 | 4.8782x | 0 |
+| Optimización 3: streams | 14.6155 s | 61.5785 | 4.8899x | 0 |
+| Half, descartada | 15.9121 s | 56.5608 | 4.4915x | 0.6708 |
 
-```
-speedup = tiempo_CPU_base / tiempo_versión
-```
+`speedup_CPU = 71.4688 / tiempo_version`. Streams usa la media de dos perfiles; las demás GPU tienen uno. Respecto a la GPU anterior en el orden base → multiplicaciones → bloques → streams, los cocientes son **0.8480x, 1.1731x y 1.0024x**. Son variantes independientes. Half tuvo 0.9159x frente a GPU base.
+
+Las variantes válidas tuvieron imagen máxima de **1 nivel**, dentro de la tolerancia de 2; half llegó a 91. Altura máxima permitida: **< 1e-4**. Los errores son de los cuadros de control; CSV y PNG están en `validacion_*` de F.
 
 ### Discusión
 
-<!-- Analiza la evolución del rendimiento entre versiones, qué optimización tuvo mayor impacto, dónde quedó el cuello de botella (cómputo, memoria, transferencias, renderizado o codificación del video) y si el error se mantuvo dentro de lo aceptable -->
+GPU base alcanzó **4.90x** frente a CPU, pero ninguna variante redujo el total perfilado. Multiplicaciones sí mejoró el render. La escritura CPU, cercana a 14 ms/cuadro, limita la mejora del programa completo.
+
+Sin perfilador, base promedió 14.3540 s; multiplicaciones dio 14.1791 s; bloques, 14.3421 s. Streams dio 19.2621 y 14.4814 s: se conservan ambas, cuya media es 16.87175 s. Su escritura CPU también varió. No se midió la causa ni se afirma significación estadística con estas pocas corridas.
+
+La serie anterior dio CPU 111.724 s y GPU base media 32.53675 s. No se mezclan series: la Jetson es compartida y no se registraron carga externa ni frecuencias.
+
+Del capítulo 3 aplicamos tres ideas: especializar operaciones costosas, revisar precisión al reducir almacenamiento y conservar dependencias con streams y eventos. Mejorar un kernel o usar asincronismo no garantiza mejorar el total.
 
 ---
 
 ## 7. Conclusiones
 
-<!-- Escribe aquí tus conclusiones -->
+- El porteo a GPU fue la mejora principal: la CPU de la Jetson tardó 71.4688 s y la GPU base perfilada, 14.5739 s, una aceleración de aproximadamente 4.90x.
+
+- Ninguna optimización posterior redujo el tiempo total con nvprof. Sin embargo, las multiplicaciones redujeron render_frame un 29.09% y el ajuste de bloques redujo simulate_step un 5.21%. Su efecto fue pequeño porque preparar el texto y escribir el video en CPU ocupó aproximadamente el 86% del tiempo de la base.
+
+- Streams pasó la validación, pero su promedio de 14.6155 s quedó ligeramente por encima de la base. El solapamiento no dio una ventaja total en estas pruebas y la implementación añadió una copia de memoria pinned a Mat.
+
+- Half redujo la simulación un 17.31%, pero superó las tolerancias: el error máximo de altura fue 0.6708 y el de imagen, 91 niveles. Por eso se descartó; las otras variantes sí conservaron la precisión requerida.
+
+- Sin perfilador, las multiplicaciones dieron una mejora total pequeña, del 1.22%. Con las pocas corridas disponibles no podemos asegurar que se mantenga. La GPU base fue la más rápida en la comparación perfilada.
+
+## 8. Uso de AI
+
+
+- [Conversación con ChatGPT](https://chatgpt.com/share/6acc5b85-381c-83e8-803b-7135f6d3ba92)
+- [Conversación con Claude 1](https://claude.ai/share/cc62c447-8056-42ff-bf3e-76bacdc2de43)
+- [Conversación con Claude 2](https://claude.ai/share/6e3b5599-62aa-4d61-a6d4-c8865869014c)
